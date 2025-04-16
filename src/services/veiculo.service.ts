@@ -83,15 +83,11 @@ export class VeiculoService {
     await this.veiculoRepository.delete(id);
   }
 
-  async validarVeiculoExistente(id: number): Promise<Veiculo> {
-    const veiculo = await this.veiculoRepository.findOne({
-      where: { id },
-    });
+  async validarVeiculoExistente(id: number): Promise<void> {
+    const veiculo = await this.veiculoRepository.existsBy({ id: id });
 
     if (!veiculo) {
       throw new HttpException('Veículo não encontrado', HttpStatus.NOT_FOUND);
     }
-
-    return veiculo;
   }
 }

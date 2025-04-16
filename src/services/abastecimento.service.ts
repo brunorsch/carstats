@@ -16,33 +16,23 @@ export class AbastecimentoService {
   ) {}
 
   async criar(
-    veiculoId: number,
+    idVeiculo: number,
     createAbastecimentoDto: CreateAbastecimentoDto,
   ): Promise<AbastecimentoResponseDto> {
-    const veiculo =
-      await this.veiculoService.validarVeiculoExistente(veiculoId);
+    const veiculo = await this.veiculoService.buscarPorId(idVeiculo);
 
     const abastecimento = this.abastecimentoRepository.create({
       ...createAbastecimentoDto,
       veiculo,
     });
 
-    const savedAbastecimento =
-      await this.abastecimentoRepository.save(abastecimento);
-    return plainToClass(AbastecimentoResponseDto, savedAbastecimento);
-  }
-
-  async buscarTodos(): Promise<AbastecimentoResponseDto[]> {
-    const abastecimentos = await this.abastecimentoRepository.find({
-      relations: ['veiculo'],
-    });
-    return plainToClass(AbastecimentoResponseDto, abastecimentos);
+    const novo = await this.abastecimentoRepository.save(abastecimento);
+    return plainToClass(AbastecimentoResponseDto, novo);
   }
 
   async buscarPorId(id: number): Promise<AbastecimentoResponseDto> {
     const abastecimento = await this.abastecimentoRepository.findOne({
       where: { id },
-      relations: ['veiculo'],
     });
 
     if (!abastecimento) {
@@ -56,12 +46,10 @@ export class AbastecimentoService {
   }
 
   async buscarPorVeiculo(
-    veiculoId: number,
+    idVeiculo: number,
   ): Promise<AbastecimentoResponseDto[]> {
-    await this.veiculoService.validarVeiculoExistente(veiculoId);
-
     const abastecimentos = await this.abastecimentoRepository.find({
-      where: { veiculo: { id: veiculoId } },
+      where: { veiculo: { id: idVeiculo } },
       relations: ['veiculo'],
     });
 
@@ -85,10 +73,8 @@ export class AbastecimentoService {
     await this.abastecimentoRepository.delete(id);
   }
 
-  async validarAbastecimentoExistente(id: number): Promise<Abastecimento> {
-    const abastecimento = await this.abastecimentoRepository.findOne({
-      where: { id },
-    });
+  async validarAbastecimentoExistente(id: number): Promise<void> {
+    const abastecimento = await this.abastecimentoRepository.existsBy({ id });
 
     if (!abastecimento) {
       throw new HttpException(
@@ -96,7 +82,5 @@ export class AbastecimentoService {
         HttpStatus.NOT_FOUND,
       );
     }
-
-    return abastecimento;
   }
 }

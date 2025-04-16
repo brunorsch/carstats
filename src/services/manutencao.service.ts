@@ -19,8 +19,7 @@ export class ManutencaoService {
     veiculoId: number,
     createManutencaoDto: CreateManutencaoDto,
   ): Promise<ManutencaoResponseDto> {
-    const veiculo =
-      await this.veiculoService.validarVeiculoExistente(veiculoId);
+    const veiculo = await this.veiculoService.buscarPorId(veiculoId);
 
     const manutencao = this.manutencaoRepository.create({
       ...createManutencaoDto,
@@ -81,10 +80,8 @@ export class ManutencaoService {
     await this.manutencaoRepository.delete(id);
   }
 
-  async validarManutencaoExistente(id: number): Promise<Manutencao> {
-    const manutencao = await this.manutencaoRepository.findOne({
-      where: { id },
-    });
+  async validarManutencaoExistente(id: number): Promise<void> {
+    const manutencao = await this.manutencaoRepository.existsBy({ id });
 
     if (!manutencao) {
       throw new HttpException(
@@ -92,7 +89,5 @@ export class ManutencaoService {
         HttpStatus.NOT_FOUND,
       );
     }
-
-    return manutencao;
   }
 }
