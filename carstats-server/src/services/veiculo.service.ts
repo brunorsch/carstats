@@ -23,7 +23,7 @@ export class VeiculoService {
 
   async buscarTodos(): Promise<VeiculoResponseDto[]> {
     const veiculos = await this.veiculoRepository.find();
-    return plainToClass(VeiculoResponseDto, veiculos);
+    return veiculos.map((veiculo) => plainToClass(VeiculoResponseDto, veiculo));
   }
 
   async buscarPorId(id: number): Promise<VeiculoResponseDto> {
@@ -48,7 +48,9 @@ export class VeiculoService {
       throw new HttpException('Veículo não encontrado', HttpStatus.NOT_FOUND);
     }
 
-    return plainToClass(AbastecimentoResponseDto, veiculo.abastecimentos);
+    return veiculo.abastecimentos.map((abastecimento) =>
+      plainToClass(AbastecimentoResponseDto, abastecimento),
+    );
   }
 
   async buscarManutencoes(id: number): Promise<ManutencaoResponseDto[]> {
@@ -61,7 +63,9 @@ export class VeiculoService {
       throw new HttpException('Veículo não encontrado', HttpStatus.NOT_FOUND);
     }
 
-    return plainToClass(ManutencaoResponseDto, veiculo.manutencoes);
+    return veiculo.manutencoes.map((manutencao) =>
+      plainToClass(ManutencaoResponseDto, manutencao),
+    );
   }
 
   async atualizar(

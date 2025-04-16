@@ -34,7 +34,9 @@ export class ManutencaoService {
     const manutencoes = await this.manutencaoRepository.find({
       relations: ['veiculo'],
     });
-    return plainToClass(ManutencaoResponseDto, manutencoes);
+    return manutencoes.map((manutencao) =>
+      plainToClass(ManutencaoResponseDto, manutencao),
+    );
   }
 
   async buscarPorId(id: number): Promise<ManutencaoResponseDto> {
@@ -60,7 +62,10 @@ export class ManutencaoService {
       where: { veiculo: { id: veiculoId } },
       relations: ['veiculo'],
     });
-    return plainToClass(ManutencaoResponseDto, manutencoes);
+
+    return manutencoes.map((manutencao) =>
+      plainToClass(ManutencaoResponseDto, manutencao),
+    );
   }
 
   async atualizar(

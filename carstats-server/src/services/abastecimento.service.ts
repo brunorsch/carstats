@@ -53,7 +53,9 @@ export class AbastecimentoService {
       relations: ['veiculo'],
     });
 
-    return plainToClass(AbastecimentoResponseDto, abastecimentos);
+    return abastecimentos.map((abastecimento) =>
+      plainToClass(AbastecimentoResponseDto, abastecimento),
+    );
   }
 
   async atualizar(
