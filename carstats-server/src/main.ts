@@ -15,6 +15,7 @@ function setupSwagger(app) {
     .setTitle('CarStats API')
     .setDescription('API do CarStats')
     .setVersion('1.0')
+    .addApiKey({ type: 'apiKey', name: 'X-User-ID', in: 'header' }, 'X-User-ID')
     .build();
 
   const document = SwaggerModule.createDocument(app, config);

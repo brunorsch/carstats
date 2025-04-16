@@ -3,6 +3,7 @@ import {
   Controller,
   Delete,
   Get,
+  Headers,
   HttpCode,
   HttpStatus,
   Param,
@@ -30,6 +31,7 @@ export class VeiculoController {
   ) {}
 
   @Post()
+  @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'Criar um novo veículo' })
   @ApiResponse({
     status: HttpStatus.CREATED,
@@ -39,8 +41,9 @@ export class VeiculoController {
   @ApiResponse({ status: 400, description: 'Dados inválidos' })
   async criar(
     @Body() createVeiculoDto: CreateVeiculoDto,
+    @Headers('x-user-id') idUsuario: number,
   ): Promise<VeiculoResponseDto> {
-    return await this.veiculoService.criar(createVeiculoDto);
+    return await this.veiculoService.criar(createVeiculoDto, idUsuario);
   }
 
   @Get()
@@ -50,20 +53,25 @@ export class VeiculoController {
     description: 'Lista de veículos retornada com sucesso',
     type: [VeiculoResponseDto],
   })
-  async buscarTodos(): Promise<VeiculoResponseDto[]> {
-    return await this.veiculoService.buscarTodos();
+  async buscarTodos(
+    @Headers('x-user-id') idUsuario: number,
+  ): Promise<VeiculoResponseDto[]> {
+    return await this.veiculoService.buscarTodos(idUsuario);
   }
 
   @Get(':id')
-  @ApiOperation({ summary: 'Buscar um veículo pelo ID' })
+  @ApiOperation({ summary: 'Buscar veículo por ID' })
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'Veículo encontrado com sucesso',
     type: VeiculoResponseDto,
   })
   @ApiResponse({ status: 404, description: 'Veículo não encontrado' })
-  async buscarPorId(@Param('id') id: number): Promise<VeiculoResponseDto> {
-    return await this.veiculoService.buscarPorId(id);
+  async buscarPorId(
+    @Param('id') id: number,
+    @Headers('x-user-id') idUsuario: number,
+  ): Promise<VeiculoResponseDto> {
+    return await this.veiculoService.buscarPorId(id, idUsuario);
   }
 
   @Put(':id')
@@ -78,8 +86,9 @@ export class VeiculoController {
   async atualizar(
     @Param('id') id: number,
     @Body() updateVeiculoDto: CreateVeiculoDto,
+    @Headers('x-user-id') idUsuario: number,
   ): Promise<VeiculoResponseDto> {
-    return await this.veiculoService.atualizar(id, updateVeiculoDto);
+    return await this.veiculoService.atualizar(id, updateVeiculoDto, idUsuario);
   }
 
   @Delete(':id')
@@ -90,63 +99,86 @@ export class VeiculoController {
     description: 'Veículo deletado com sucesso',
   })
   @ApiResponse({ status: 404, description: 'Veículo não encontrado' })
-  async deletar(@Param('id') id: number): Promise<void> {
-    await this.veiculoService.deletar(id);
+  async deletar(
+    @Param('id') id: number,
+    @Headers('x-user-id') idUsuario: number,
+  ): Promise<void> {
+    await this.veiculoService.deletar(id, idUsuario);
   }
 
   @Post(':id/manutencoes')
-  @ApiOperation({ summary: 'Criar uma nova manutenção para o veículo' })
+  @HttpCode(HttpStatus.CREATED)
+  @ApiOperation({ summary: 'Adicionar manutenção a um veículo' })
   @ApiResponse({
     status: HttpStatus.CREATED,
-    description: 'Manutenção criada com sucesso',
+    description: 'Manutenção adicionada com sucesso',
     type: ManutencaoResponseDto,
   })
+  @ApiResponse({ status: 400, description: 'Dados inválidos' })
+  @ApiResponse({ status: 404, description: 'Veículo não encontrado' })
   async criarManutencao(
     @Param('id') veiculoId: number,
     @Body() createManutencaoDto: CreateManutencaoDto,
+    @Headers('x-user-id') idUsuario: number,
   ): Promise<ManutencaoResponseDto> {
-    return this.manutencaoService.criar(veiculoId, createManutencaoDto);
+    await this.veiculoService.validarVeiculoExistente(veiculoId, idUsuario);
+    return await this.manutencaoService.criar(
+      veiculoId,
+      createManutencaoDto,
+      idUsuario,
+    );
   }
 
   @Get(':id/manutencoes')
-  @ApiOperation({ summary: 'Buscar manutenções do veículo' })
+  @ApiOperation({ summary: 'Listar manutenções de um veículo' })
   @ApiResponse({
     status: HttpStatus.OK,
-    description: 'Lista de manutenções do veículo',
+    description: 'Lista de manutenções retornada com sucesso',
     type: [ManutencaoResponseDto],
   })
+  @ApiResponse({ status: 404, description: 'Veículo não encontrado' })
   async buscarManutencoes(
     @Param('id') veiculoId: number,
+    @Headers('x-user-id') idUsuario: number,
   ): Promise<ManutencaoResponseDto[]> {
-    return this.manutencaoService.buscarPorVeiculo(veiculoId);
+    return await this.veiculoService.buscarManutencoes(veiculoId, idUsuario);
   }
 
   @Post(':id/abastecimentos')
-  @ApiOperation({
-    summary: 'Salvar novo histórico de abastecimento para o veículo',
-  })
+  @HttpCode(HttpStatus.CREATED)
+  @ApiOperation({ summary: 'Adicionar abastecimento a um veículo' })
   @ApiResponse({
     status: HttpStatus.CREATED,
-    description: 'Abastecimento criado com sucesso',
+    description: 'Abastecimento adicionado com sucesso',
     type: AbastecimentoResponseDto,
   })
+  @ApiResponse({ status: 400, description: 'Dados inválidos' })
+  @ApiResponse({ status: 404, description: 'Veículo não encontrado' })
   async criarAbastecimento(
     @Param('id') veiculoId: number,
     @Body() createAbastecimentoDto: CreateAbastecimentoDto,
+    @Headers('x-user-id') idUsuario: number,
   ): Promise<AbastecimentoResponseDto> {
-    return this.abastecimentoService.criar(veiculoId, createAbastecimentoDto);
+    await this.veiculoService.validarVeiculoExistente(veiculoId, idUsuario);
+    return await this.abastecimentoService.criar(
+      veiculoId,
+      createAbastecimentoDto,
+      idUsuario,
+    );
   }
 
   @Get(':id/abastecimentos')
-  @ApiOperation({ summary: 'Buscar abastecimentos do veículo' })
+  @ApiOperation({ summary: 'Listar abastecimentos de um veículo' })
   @ApiResponse({
     status: HttpStatus.OK,
-    description: 'Lista de abastecimentos do veículo',
+    description: 'Lista de abastecimentos retornada com sucesso',
     type: [AbastecimentoResponseDto],
   })
+  @ApiResponse({ status: 404, description: 'Veículo não encontrado' })
   async buscarAbastecimentos(
     @Param('id') veiculoId: number,
+    @Headers('x-user-id') idUsuario: number,
   ): Promise<AbastecimentoResponseDto[]> {
-    return this.abastecimentoService.buscarPorVeiculo(veiculoId);
+    return await this.veiculoService.buscarAbastecimentos(veiculoId, idUsuario);
   }
 }

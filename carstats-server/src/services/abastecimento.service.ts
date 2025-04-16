@@ -18,8 +18,9 @@ export class AbastecimentoService {
   async criar(
     idVeiculo: number,
     createAbastecimentoDto: CreateAbastecimentoDto,
+    idUsuario: number,
   ): Promise<AbastecimentoResponseDto> {
-    const veiculo = await this.veiculoService.buscarPorId(idVeiculo);
+    const veiculo = await this.veiculoService.buscarPorId(idVeiculo, idUsuario);
 
     const abastecimento = this.abastecimentoRepository.create({
       ...createAbastecimentoDto,
@@ -30,9 +31,13 @@ export class AbastecimentoService {
     return plainToClass(AbastecimentoResponseDto, novo);
   }
 
-  async buscarPorId(id: number): Promise<AbastecimentoResponseDto> {
+  async buscarPorId(
+    id: number,
+    idUsuario: number,
+  ): Promise<AbastecimentoResponseDto> {
     const abastecimento = await this.abastecimentoRepository.findOne({
       where: { id },
+      relations: ['veiculo'],
     });
 
     if (!abastecimento) {
@@ -40,6 +45,10 @@ export class AbastecimentoService {
         'Abastecimento não encontrado',
         HttpStatus.NOT_FOUND,
       );
+    }
+
+    if (abastecimento.veiculo.idUsuario !== idUsuario) {
+      throw new HttpException('Acesso não autorizado', HttpStatus.FORBIDDEN);
     }
 
     return plainToClass(AbastecimentoResponseDto, abastecimento);
@@ -61,22 +70,29 @@ export class AbastecimentoService {
   async atualizar(
     id: number,
     updateAbastecimentoDto: CreateAbastecimentoDto,
+    idUsuario: number,
   ): Promise<AbastecimentoResponseDto> {
-    await this.validarAbastecimentoExistente(id);
+    await this.validarAbastecimentoExistente(id, idUsuario);
 
     await this.abastecimentoRepository.update(id, updateAbastecimentoDto);
 
-    const updatedAbastecimento = await this.buscarPorId(id);
+    const updatedAbastecimento = await this.buscarPorId(id, idUsuario);
     return plainToClass(AbastecimentoResponseDto, updatedAbastecimento);
   }
 
-  async deletar(id: number): Promise<void> {
-    await this.validarAbastecimentoExistente(id);
+  async deletar(id: number, idUsuario: number): Promise<void> {
+    await this.validarAbastecimentoExistente(id, idUsuario);
     await this.abastecimentoRepository.delete(id);
   }
 
-  async validarAbastecimentoExistente(id: number): Promise<void> {
-    const abastecimento = await this.abastecimentoRepository.existsBy({ id });
+  async validarAbastecimentoExistente(
+    id: number,
+    idUsuario: number,
+  ): Promise<void> {
+    const abastecimento = await this.abastecimentoRepository.existsBy({
+      id,
+      veiculo: { idUsuario },
+    });
 
     if (!abastecimento) {
       throw new HttpException(

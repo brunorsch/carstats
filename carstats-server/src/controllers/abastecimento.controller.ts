@@ -1,4 +1,14 @@
-import { Body, Controller, Delete, Get, Param, Put } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Headers,
+  HttpCode,
+  HttpStatus,
+  Param,
+  Put,
+} from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AbastecimentoResponseDto } from '../dtos/abastecimento/abastecimento-response.dto';
 import { CreateAbastecimentoDto } from '../dtos/abastecimento/create-abastecimento.dto';
@@ -12,21 +22,22 @@ export class AbastecimentoController {
   @Get(':id')
   @ApiOperation({ summary: 'Buscar abastecimento por ID' })
   @ApiResponse({
-    status: 200,
-    description: 'Abastecimento encontrado',
+    status: HttpStatus.OK,
+    description: 'Abastecimento encontrado com sucesso',
     type: AbastecimentoResponseDto,
   })
   @ApiResponse({ status: 404, description: 'Abastecimento não encontrado' })
   async buscarPorId(
     @Param('id') id: number,
+    @Headers('x-user-id') idUsuario: number,
   ): Promise<AbastecimentoResponseDto> {
-    return await this.abastecimentoService.buscarPorId(id);
+    return await this.abastecimentoService.buscarPorId(id, idUsuario);
   }
 
   @Put(':id')
   @ApiOperation({ summary: 'Atualizar um abastecimento' })
   @ApiResponse({
-    status: 200,
+    status: HttpStatus.OK,
     description: 'Abastecimento atualizado com sucesso',
     type: AbastecimentoResponseDto,
   })
@@ -35,21 +46,27 @@ export class AbastecimentoController {
   async atualizar(
     @Param('id') id: number,
     @Body() updateAbastecimentoDto: CreateAbastecimentoDto,
+    @Headers('x-user-id') idUsuario: number,
   ): Promise<AbastecimentoResponseDto> {
     return await this.abastecimentoService.atualizar(
       id,
       updateAbastecimentoDto,
+      idUsuario,
     );
   }
 
   @Delete(':id')
+  @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Deletar um abastecimento' })
   @ApiResponse({
-    status: 200,
+    status: HttpStatus.NO_CONTENT,
     description: 'Abastecimento deletado com sucesso',
   })
   @ApiResponse({ status: 404, description: 'Abastecimento não encontrado' })
-  async deletar(@Param('id') id: number): Promise<void> {
-    await this.abastecimentoService.deletar(id);
+  async deletar(
+    @Param('id') id: number,
+    @Headers('x-user-id') idUsuario: number,
+  ): Promise<void> {
+    await this.abastecimentoService.deletar(id, idUsuario);
   }
 }

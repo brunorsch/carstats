@@ -15,20 +15,31 @@ export class VeiculoService {
     private veiculoRepository: Repository<Veiculo>,
   ) {}
 
-  async criar(createVeiculoDto: CreateVeiculoDto): Promise<VeiculoResponseDto> {
-    const veiculo = this.veiculoRepository.create(createVeiculoDto);
+  async criar(
+    createVeiculoDto: CreateVeiculoDto,
+    idUsuario: number,
+  ): Promise<VeiculoResponseDto> {
+    const veiculo = this.veiculoRepository.create({
+      ...createVeiculoDto,
+      idUsuario,
+    });
     const savedVeiculo = await this.veiculoRepository.save(veiculo);
     return plainToClass(VeiculoResponseDto, savedVeiculo);
   }
 
-  async buscarTodos(): Promise<VeiculoResponseDto[]> {
-    const veiculos = await this.veiculoRepository.find();
+  async buscarTodos(idUsuario: number): Promise<VeiculoResponseDto[]> {
+    const veiculos = await this.veiculoRepository.find({
+      where: { idUsuario },
+    });
     return veiculos.map((veiculo) => plainToClass(VeiculoResponseDto, veiculo));
   }
 
-  async buscarPorId(id: number): Promise<VeiculoResponseDto> {
+  async buscarPorId(
+    id: number,
+    idUsuario: number,
+  ): Promise<VeiculoResponseDto> {
     const veiculo = await this.veiculoRepository.findOne({
-      where: { id },
+      where: { id, idUsuario },
     });
 
     if (!veiculo) {
@@ -38,9 +49,12 @@ export class VeiculoService {
     return plainToClass(VeiculoResponseDto, veiculo);
   }
 
-  async buscarAbastecimentos(id: number): Promise<AbastecimentoResponseDto[]> {
+  async buscarAbastecimentos(
+    id: number,
+    idUsuario: number,
+  ): Promise<AbastecimentoResponseDto[]> {
     const veiculo = await this.veiculoRepository.findOne({
-      where: { id },
+      where: { id, idUsuario },
       relations: ['abastecimentos'],
     });
 
@@ -53,9 +67,12 @@ export class VeiculoService {
     );
   }
 
-  async buscarManutencoes(id: number): Promise<ManutencaoResponseDto[]> {
+  async buscarManutencoes(
+    id: number,
+    idUsuario: number,
+  ): Promise<ManutencaoResponseDto[]> {
     const veiculo = await this.veiculoRepository.findOne({
-      where: { id },
+      where: { id, idUsuario },
       relations: ['manutencoes'],
     });
 
@@ -71,24 +88,25 @@ export class VeiculoService {
   async atualizar(
     id: number,
     updateVeiculoDto: CreateVeiculoDto,
+    idUsuario: number,
   ): Promise<VeiculoResponseDto> {
-    await this.validarVeiculoExistente(id);
-
     await this.veiculoRepository.update(id, updateVeiculoDto);
 
-    const veiculo = await this.buscarPorId(id);
+    const veiculo = await this.buscarPorId(id, idUsuario);
 
     return plainToClass(VeiculoResponseDto, veiculo);
   }
 
-  async deletar(id: number): Promise<void> {
-    await this.validarVeiculoExistente(id);
+  async deletar(id: number, idUsuario: number): Promise<void> {
+    await this.validarVeiculoExistente(id, idUsuario);
 
     await this.veiculoRepository.delete(id);
   }
 
-  async validarVeiculoExistente(id: number): Promise<void> {
-    const veiculo = await this.veiculoRepository.existsBy({ id: id });
+  async validarVeiculoExistente(id: number, idUsuario: number): Promise<void> {
+    const veiculo = await this.veiculoRepository.findOne({
+      where: { id, idUsuario },
+    });
 
     if (!veiculo) {
       throw new HttpException('Veículo não encontrado', HttpStatus.NOT_FOUND);

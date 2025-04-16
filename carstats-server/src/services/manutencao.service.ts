@@ -18,8 +18,9 @@ export class ManutencaoService {
   async criar(
     veiculoId: number,
     createManutencaoDto: CreateManutencaoDto,
+    idUsuario: number,
   ): Promise<ManutencaoResponseDto> {
-    const veiculo = await this.veiculoService.buscarPorId(veiculoId);
+    const veiculo = await this.veiculoService.buscarPorId(veiculoId, idUsuario);
 
     const manutencao = this.manutencaoRepository.create({
       ...createManutencaoDto,
@@ -30,16 +31,17 @@ export class ManutencaoService {
     return plainToClass(ManutencaoResponseDto, savedManutencao);
   }
 
-  async buscarTodos(): Promise<ManutencaoResponseDto[]> {
+  async buscarTodos(idUsuario: number): Promise<ManutencaoResponseDto[]> {
     const manutencoes = await this.manutencaoRepository.find({
       relations: ['veiculo'],
+      where: { veiculo: { idUsuario } },
     });
     return manutencoes.map((manutencao) =>
       plainToClass(ManutencaoResponseDto, manutencao),
     );
   }
 
-  async buscarPorId(id: number): Promise<ManutencaoResponseDto> {
+  async buscarPorId(id: number, idUsuario: number): Promise<Manutencao> {
     const manutencao = await this.manutencaoRepository.findOne({
       where: { id },
       relations: ['veiculo'],
@@ -52,15 +54,22 @@ export class ManutencaoService {
       );
     }
 
-    return plainToClass(ManutencaoResponseDto, manutencao);
+    // Verifica se a manutenção pertence a um veículo do usuário
+    if (manutencao.veiculo.idUsuario !== idUsuario) {
+      throw new HttpException('Acesso não autorizado', HttpStatus.FORBIDDEN);
+    }
+
+    return manutencao;
   }
 
-  async buscarPorVeiculo(veiculoId: number): Promise<ManutencaoResponseDto[]> {
-    await this.veiculoService.validarVeiculoExistente(veiculoId);
+  async buscarPorVeiculo(
+    veiculoId: number,
+    idUsuario: number,
+  ): Promise<ManutencaoResponseDto[]> {
+    await this.veiculoService.validarVeiculoExistente(veiculoId, idUsuario);
 
     const manutencoes = await this.manutencaoRepository.find({
       where: { veiculo: { id: veiculoId } },
-      relations: ['veiculo'],
     });
 
     return manutencoes.map((manutencao) =>
@@ -71,22 +80,39 @@ export class ManutencaoService {
   async atualizar(
     id: number,
     updateManutencaoDto: CreateManutencaoDto,
+    idUsuario: number,
   ): Promise<ManutencaoResponseDto> {
-    await this.validarManutencaoExistente(id);
+    const manutencao = await this.buscarPorId(id, idUsuario);
 
-    await this.manutencaoRepository.update(id, updateManutencaoDto);
+    if (!manutencao) {
+      throw new HttpException(
+        'Manutenção não encontrada',
+        HttpStatus.NOT_FOUND,
+      );
+    }
 
-    const updatedManutencao = await this.buscarPorId(id);
-    return plainToClass(ManutencaoResponseDto, updatedManutencao);
+    Object.assign(manutencao, updateManutencaoDto);
+
+    const atualizada = await this.manutencaoRepository.save(manutencao);
+
+    return plainToClass(ManutencaoResponseDto, atualizada);
   }
 
-  async deletar(id: number): Promise<void> {
-    await this.validarManutencaoExistente(id);
-    await this.manutencaoRepository.delete(id);
+  async deletar(id: number, idUsuario: number): Promise<void> {
+    await this.manutencaoRepository.delete({
+      id,
+      veiculo: { idUsuario },
+    });
   }
 
-  async validarManutencaoExistente(id: number): Promise<void> {
-    const manutencao = await this.manutencaoRepository.existsBy({ id });
+  async validarManutencaoExistente(
+    id: number,
+    idUsuario: number,
+  ): Promise<void> {
+    const manutencao = await this.manutencaoRepository.exists({
+      where: { id, veiculo: { idUsuario } },
+      relations: ['veiculo'],
+    });
 
     if (!manutencao) {
       throw new HttpException(

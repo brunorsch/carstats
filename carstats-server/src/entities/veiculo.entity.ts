@@ -8,6 +8,9 @@ export class Veiculo {
   id: number;
 
   @Column()
+  idUsuario: number;
+
+  @Column()
   marca: string;
 
   @Column()
