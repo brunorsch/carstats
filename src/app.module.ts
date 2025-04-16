@@ -1,10 +1,34 @@
 import { Module } from '@nestjs/common';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { AbastecimentoController } from './controllers/abastecimento.controller';
+import { ManutencaoController } from './controllers/manutencao.controller';
+import { VeiculoController } from './controllers/veiculo.controller';
+import { Abastecimento } from './entities/abastecimento.entity';
+import { Manutencao } from './entities/manutencao.entity';
+import { Veiculo } from './entities/veiculo.entity';
+import { AbastecimentoService } from './services/abastecimento.service';
+import { ManutencaoService } from './services/manutencao.service';
+import { VeiculoService } from './services/veiculo.service';
 
 @Module({
-  imports: [],
-  controllers: [AppController],
-  providers: [AppService],
+  imports: [
+    TypeOrmModule.forRoot({
+      type: 'mysql',
+      host: 'localhost',
+      port: 3306,
+      username: 'root',
+      password: 'root',
+      database: 'carstats',
+      entities: [Veiculo, Abastecimento, Manutencao],
+      synchronize: true, // Não usar em produção
+    }),
+    TypeOrmModule.forFeature([Veiculo, Abastecimento, Manutencao]),
+  ],
+  controllers: [
+    VeiculoController,
+    AbastecimentoController,
+    ManutencaoController,
+  ],
+  providers: [VeiculoService, AbastecimentoService, ManutencaoService],
 })
 export class AppModule {}
