@@ -9,7 +9,12 @@ import {
   Put,
   Req,
 } from '@nestjs/common';
-import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiOperation,
+  ApiResponse,
+  ApiSecurity,
+  ApiTags,
+} from '@nestjs/swagger';
 import { plainToClass } from 'class-transformer';
 import { Request } from 'express';
 import { CreateManutencaoDto } from '../dtos/manutencao/create-manutencao.dto';
@@ -17,6 +22,7 @@ import { ManutencaoResponseDto } from '../dtos/manutencao/manutencao-response.dt
 import { ManutencaoService } from '../services/manutencao.service';
 
 @ApiTags('Manutenções')
+@ApiSecurity('X-User-ID')
 @Controller('manutencoes')
 export class ManutencaoController {
   constructor(private readonly manutencaoService: ManutencaoService) {}

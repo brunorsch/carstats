@@ -9,13 +9,19 @@ import {
   Put,
   Req,
 } from '@nestjs/common';
-import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiOperation,
+  ApiResponse,
+  ApiSecurity,
+  ApiTags,
+} from '@nestjs/swagger';
 import { Request } from 'express';
 import { AbastecimentoResponseDto } from '../dtos/abastecimento/abastecimento-response.dto';
 import { CreateAbastecimentoDto } from '../dtos/abastecimento/create-abastecimento.dto';
 import { AbastecimentoService } from '../services/abastecimento.service';
 
 @ApiTags('Abastecimentos')
+@ApiSecurity('X-User-ID')
 @Controller('abastecimentos')
 export class AbastecimentoController {
   constructor(private readonly abastecimentoService: AbastecimentoService) {}

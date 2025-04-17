@@ -10,7 +10,12 @@ import {
   Put,
   Req,
 } from '@nestjs/common';
-import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiOperation,
+  ApiResponse,
+  ApiSecurity,
+  ApiTags,
+} from '@nestjs/swagger';
 import { Request } from 'express';
 import { AbastecimentoResponseDto } from '../dtos/abastecimento/abastecimento-response.dto';
 import { CreateAbastecimentoDto } from '../dtos/abastecimento/create-abastecimento.dto';
@@ -23,6 +28,7 @@ import { ManutencaoService } from '../services/manutencao.service';
 import { VeiculoService } from '../services/veiculo.service';
 
 @ApiTags('Veículos')
+@ApiSecurity('X-User-ID')
 @Controller('veiculos')
 export class VeiculoController {
   constructor(

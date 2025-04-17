@@ -1,5 +1,6 @@
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { databaseConfig } from './config/database.config';
 import { AbastecimentoController } from './controllers/abastecimento.controller';
 import { ManutencaoController } from './controllers/manutencao.controller';
 import { VeiculoController } from './controllers/veiculo.controller';
@@ -13,16 +14,7 @@ import { VeiculoService } from './services/veiculo.service';
 
 @Module({
   imports: [
-    TypeOrmModule.forRoot({
-      type: 'mysql',
-      host: 'localhost',
-      port: 3306,
-      username: 'root',
-      password: 'root',
-      database: 'carstats',
-      entities: [Veiculo, Abastecimento, Manutencao],
-      synchronize: true, // Não usar em produção
-    }),
+    TypeOrmModule.forRoot(databaseConfig),
     TypeOrmModule.forFeature([Veiculo, Abastecimento, Manutencao]),
   ],
   controllers: [
