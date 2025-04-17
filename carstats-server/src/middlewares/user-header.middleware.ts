@@ -1,7 +1,7 @@
 import {
-    Injectable,
-    NestMiddleware,
-    UnauthorizedException,
+  Injectable,
+  NestMiddleware,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { NextFunction, Request, Response } from 'express';
 
@@ -22,7 +22,9 @@ export class UserHeaderMiddleware implements NestMiddleware {
       );
     }
 
-    req['idUsuario'] = idUsuarioNum;
+    req.usuario = {
+      id: idUsuarioNum,
+    };
 
     next();
   }

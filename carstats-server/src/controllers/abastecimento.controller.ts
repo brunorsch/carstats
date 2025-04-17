@@ -3,13 +3,14 @@ import {
   Controller,
   Delete,
   Get,
-  Headers,
   HttpCode,
   HttpStatus,
   Param,
   Put,
+  Req,
 } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { Request } from 'express';
 import { AbastecimentoResponseDto } from '../dtos/abastecimento/abastecimento-response.dto';
 import { CreateAbastecimentoDto } from '../dtos/abastecimento/create-abastecimento.dto';
 import { AbastecimentoService } from '../services/abastecimento.service';
@@ -29,8 +30,9 @@ export class AbastecimentoController {
   @ApiResponse({ status: 404, description: 'Abastecimento não encontrado' })
   async buscarPorId(
     @Param('id') id: number,
-    @Headers('x-user-id') idUsuario: number,
+    @Req() req: Request,
   ): Promise<AbastecimentoResponseDto> {
+    const idUsuario = req.usuario.id;
     return await this.abastecimentoService.buscarPorId(id, idUsuario);
   }
 
@@ -46,8 +48,9 @@ export class AbastecimentoController {
   async atualizar(
     @Param('id') id: number,
     @Body() updateAbastecimentoDto: CreateAbastecimentoDto,
-    @Headers('x-user-id') idUsuario: number,
+    @Req() req: Request,
   ): Promise<AbastecimentoResponseDto> {
+    const idUsuario = req.usuario.id;
     return await this.abastecimentoService.atualizar(
       id,
       updateAbastecimentoDto,
@@ -63,10 +66,8 @@ export class AbastecimentoController {
     description: 'Abastecimento deletado com sucesso',
   })
   @ApiResponse({ status: 404, description: 'Abastecimento não encontrado' })
-  async deletar(
-    @Param('id') id: number,
-    @Headers('x-user-id') idUsuario: number,
-  ): Promise<void> {
+  async deletar(@Param('id') id: number, @Req() req: Request): Promise<void> {
+    const idUsuario = req.usuario.id;
     await this.abastecimentoService.deletar(id, idUsuario);
   }
 }

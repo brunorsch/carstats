@@ -3,14 +3,15 @@ import {
   Controller,
   Delete,
   Get,
-  Headers,
   HttpCode,
   HttpStatus,
   Param,
   Put,
+  Req,
 } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { plainToClass } from 'class-transformer';
+import { Request } from 'express';
 import { CreateManutencaoDto } from '../dtos/manutencao/create-manutencao.dto';
 import { ManutencaoResponseDto } from '../dtos/manutencao/manutencao-response.dto';
 import { ManutencaoService } from '../services/manutencao.service';
@@ -30,8 +31,9 @@ export class ManutencaoController {
   @ApiResponse({ status: 404, description: 'Manutenção não encontrada' })
   async buscarPorId(
     @Param('id') id: number,
-    @Headers('x-user-id') idUsuario: number,
+    @Req() req: Request,
   ): Promise<ManutencaoResponseDto> {
+    const idUsuario = req.usuario.id;
     const manutencao = await this.manutencaoService.buscarPorId(id, idUsuario);
     return plainToClass(ManutencaoResponseDto, manutencao);
   }
@@ -48,8 +50,9 @@ export class ManutencaoController {
   async atualizar(
     @Param('id') id: number,
     @Body() updateManutencaoDto: CreateManutencaoDto,
-    @Headers('x-user-id') idUsuario: number,
+    @Req() req: Request,
   ): Promise<ManutencaoResponseDto> {
+    const idUsuario = req.usuario.id;
     return await this.manutencaoService.atualizar(
       id,
       updateManutencaoDto,
@@ -65,10 +68,8 @@ export class ManutencaoController {
     description: 'Manutenção deletada com sucesso',
   })
   @ApiResponse({ status: 404, description: 'Manutenção não encontrada' })
-  async deletar(
-    @Param('id') id: number,
-    @Headers('x-user-id') idUsuario: number,
-  ): Promise<void> {
+  async deletar(@Param('id') id: number, @Req() req: Request): Promise<void> {
+    const idUsuario = req.usuario.id;
     await this.manutencaoService.deletar(id, idUsuario);
   }
 }

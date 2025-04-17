@@ -3,14 +3,15 @@ import {
   Controller,
   Delete,
   Get,
-  Headers,
   HttpCode,
   HttpStatus,
   Param,
   Post,
   Put,
+  Req,
 } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { Request } from 'express';
 import { AbastecimentoResponseDto } from '../dtos/abastecimento/abastecimento-response.dto';
 import { CreateAbastecimentoDto } from '../dtos/abastecimento/create-abastecimento.dto';
 import { CreateManutencaoDto } from '../dtos/manutencao/create-manutencao.dto';
@@ -41,8 +42,9 @@ export class VeiculoController {
   @ApiResponse({ status: 400, description: 'Dados inválidos' })
   async criar(
     @Body() createVeiculoDto: CreateVeiculoDto,
-    @Headers('x-user-id') idUsuario: number,
+    @Req() req: Request,
   ): Promise<VeiculoResponseDto> {
+    const idUsuario = req.usuario.id;
     return await this.veiculoService.criar(createVeiculoDto, idUsuario);
   }
 
@@ -53,9 +55,8 @@ export class VeiculoController {
     description: 'Lista de veículos retornada com sucesso',
     type: [VeiculoResponseDto],
   })
-  async buscarTodos(
-    @Headers('x-user-id') idUsuario: number,
-  ): Promise<VeiculoResponseDto[]> {
+  async buscarTodos(@Req() req: Request): Promise<VeiculoResponseDto[]> {
+    const idUsuario = req.usuario.id;
     return await this.veiculoService.buscarTodos(idUsuario);
   }
 
@@ -69,8 +70,9 @@ export class VeiculoController {
   @ApiResponse({ status: 404, description: 'Veículo não encontrado' })
   async buscarPorId(
     @Param('id') id: number,
-    @Headers('x-user-id') idUsuario: number,
+    @Req() req: Request,
   ): Promise<VeiculoResponseDto> {
+    const idUsuario = req.usuario.id;
     return await this.veiculoService.buscarPorId(id, idUsuario);
   }
 
@@ -86,8 +88,9 @@ export class VeiculoController {
   async atualizar(
     @Param('id') id: number,
     @Body() updateVeiculoDto: CreateVeiculoDto,
-    @Headers('x-user-id') idUsuario: number,
+    @Req() req: Request,
   ): Promise<VeiculoResponseDto> {
+    const idUsuario = req.usuario.id;
     return await this.veiculoService.atualizar(id, updateVeiculoDto, idUsuario);
   }
 
@@ -99,10 +102,8 @@ export class VeiculoController {
     description: 'Veículo deletado com sucesso',
   })
   @ApiResponse({ status: 404, description: 'Veículo não encontrado' })
-  async deletar(
-    @Param('id') id: number,
-    @Headers('x-user-id') idUsuario: number,
-  ): Promise<void> {
+  async deletar(@Param('id') id: number, @Req() req: Request): Promise<void> {
+    const idUsuario = req.usuario.id;
     await this.veiculoService.deletar(id, idUsuario);
   }
 
@@ -119,8 +120,9 @@ export class VeiculoController {
   async criarManutencao(
     @Param('id') veiculoId: number,
     @Body() createManutencaoDto: CreateManutencaoDto,
-    @Headers('x-user-id') idUsuario: number,
+    @Req() req: Request,
   ): Promise<ManutencaoResponseDto> {
+    const idUsuario = req.usuario.id;
     await this.veiculoService.validarVeiculoExistente(veiculoId, idUsuario);
     return await this.manutencaoService.criar(
       veiculoId,
@@ -139,8 +141,9 @@ export class VeiculoController {
   @ApiResponse({ status: 404, description: 'Veículo não encontrado' })
   async buscarManutencoes(
     @Param('id') veiculoId: number,
-    @Headers('x-user-id') idUsuario: number,
+    @Req() req: Request,
   ): Promise<ManutencaoResponseDto[]> {
+    const idUsuario = req.usuario.id;
     return await this.veiculoService.buscarManutencoes(veiculoId, idUsuario);
   }
 
@@ -157,8 +160,9 @@ export class VeiculoController {
   async criarAbastecimento(
     @Param('id') veiculoId: number,
     @Body() createAbastecimentoDto: CreateAbastecimentoDto,
-    @Headers('x-user-id') idUsuario: number,
+    @Req() req: Request,
   ): Promise<AbastecimentoResponseDto> {
+    const idUsuario = req.usuario.id;
     await this.veiculoService.validarVeiculoExistente(veiculoId, idUsuario);
     return await this.abastecimentoService.criar(
       veiculoId,
@@ -177,8 +181,9 @@ export class VeiculoController {
   @ApiResponse({ status: 404, description: 'Veículo não encontrado' })
   async buscarAbastecimentos(
     @Param('id') veiculoId: number,
-    @Headers('x-user-id') idUsuario: number,
+    @Req() req: Request,
   ): Promise<AbastecimentoResponseDto[]> {
+    const idUsuario = req.usuario.id;
     return await this.veiculoService.buscarAbastecimentos(veiculoId, idUsuario);
   }
 }
