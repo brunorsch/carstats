@@ -170,7 +170,7 @@ export class VeiculoController {
   ): Promise<AbastecimentoResponseDto> {
     const idUsuario = req.usuario.id;
     await this.veiculoService.validarVeiculoExistente(veiculoId, idUsuario);
-    return await this.abastecimentoService.criar(
+    return await this.abastecimentoService.cadastrar(
       veiculoId,
       createAbastecimentoDto,
       idUsuario,

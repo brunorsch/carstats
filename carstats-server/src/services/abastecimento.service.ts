@@ -15,15 +15,22 @@ export class AbastecimentoService {
     private veiculoService: VeiculoService,
   ) {}
 
-  async criar(
+  async cadastrar(
     idVeiculo: number,
-    createAbastecimentoDto: CreateAbastecimentoDto,
+    request: CreateAbastecimentoDto,
     idUsuario: number,
   ): Promise<AbastecimentoResponseDto> {
+    if (!request.litros && !request.valorTotal) {
+      throw new HttpException(
+        'Ao menos um dos campos: "Litros" ou "Valor total do abastecimento" devem ser preenchidos',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
     const veiculo = await this.veiculoService.buscarPorId(idVeiculo, idUsuario);
 
     const abastecimento = this.abastecimentoRepository.create({
-      ...createAbastecimentoDto,
+      ...request,
       veiculo,
     });
 

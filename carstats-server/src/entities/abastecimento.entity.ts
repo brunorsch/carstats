@@ -1,9 +1,9 @@
 import {
-  Entity,
-  PrimaryGeneratedColumn,
   Column,
-  ManyToOne,
   CreateDateColumn,
+  Entity,
+  ManyToOne,
+  PrimaryGeneratedColumn,
 } from 'typeorm';
 
 import { Veiculo } from './veiculo.entity';
@@ -28,8 +28,11 @@ export class Abastecimento {
   @Column({ type: 'decimal', precision: 10, scale: 2 })
   quilometragem: number;
 
+  @Column()
+  isTanqueCompletado: boolean;
+
   @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true })
-  consumo: number;
+  consumoCalculado?: number;
 
   @ManyToOne(() => Veiculo, (veiculo: Veiculo) => veiculo.abastecimentos)
   veiculo: Veiculo;

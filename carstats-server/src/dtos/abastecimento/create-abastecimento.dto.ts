@@ -23,4 +23,10 @@ export class CreateAbastecimentoDto {
   @IsNumber()
   @IsNotEmpty()
   quilometragem: number;
+
+  @ApiProperty({
+    description: 'Flag indicando se o tanque foi completado',
+    required: true,
+  })
+  isTanqueCheio: boolean;
 }
