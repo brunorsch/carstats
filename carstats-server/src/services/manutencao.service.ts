@@ -9,116 +9,97 @@ import { VeiculoService } from './veiculo.service';
 
 @Injectable()
 export class ManutencaoService {
-  constructor(
-    @InjectRepository(Manutencao)
-    private manutencaoRepository: Repository<Manutencao>,
-    private veiculoService: VeiculoService,
-  ) {}
+    constructor(
+        @InjectRepository(Manutencao)
+        private manutencaoRepository: Repository<Manutencao>,
+        private veiculoService: VeiculoService,
+    ) {}
 
-  async criar(
-    veiculoId: number,
-    createManutencaoDto: CreateManutencaoDto,
-    idUsuario: number,
-  ): Promise<ManutencaoResponseDto> {
-    const veiculo = await this.veiculoService.buscarPorId(veiculoId, idUsuario);
+    async criar(
+        veiculoId: number,
+        createManutencaoDto: CreateManutencaoDto,
+        idUsuario: number,
+    ): Promise<ManutencaoResponseDto> {
+        const veiculo = await this.veiculoService.buscarPorId(veiculoId, idUsuario);
 
-    const manutencao = this.manutencaoRepository.create({
-      ...createManutencaoDto,
-      veiculo,
-    });
+        const manutencao = this.manutencaoRepository.create({
+            ...createManutencaoDto,
+            veiculo,
+        });
 
-    const savedManutencao = await this.manutencaoRepository.save(manutencao);
-    return plainToClass(ManutencaoResponseDto, savedManutencao);
-  }
-
-  async buscarTodos(idUsuario: number): Promise<ManutencaoResponseDto[]> {
-    const manutencoes = await this.manutencaoRepository.find({
-      relations: ['veiculo'],
-      where: { veiculo: { idUsuario } },
-    });
-    return manutencoes.map((manutencao) =>
-      plainToClass(ManutencaoResponseDto, manutencao),
-    );
-  }
-
-  async buscarPorId(id: number, idUsuario: number): Promise<Manutencao> {
-    const manutencao = await this.manutencaoRepository.findOne({
-      where: { id },
-      relations: ['veiculo'],
-    });
-
-    if (!manutencao) {
-      throw new HttpException(
-        'Manutenção não encontrada',
-        HttpStatus.NOT_FOUND,
-      );
+        const savedManutencao = await this.manutencaoRepository.save(manutencao);
+        return plainToClass(ManutencaoResponseDto, savedManutencao);
     }
 
-    // Verifica se a manutenção pertence a um veículo do usuário
-    if (manutencao.veiculo.idUsuario !== idUsuario) {
-      throw new HttpException('Acesso não autorizado', HttpStatus.FORBIDDEN);
+    async buscarTodos(idUsuario: number): Promise<ManutencaoResponseDto[]> {
+        const manutencoes = await this.manutencaoRepository.find({
+            relations: ['veiculo'],
+            where: { veiculo: { idUsuario } },
+        });
+        return manutencoes.map((manutencao) => plainToClass(ManutencaoResponseDto, manutencao));
     }
 
-    return manutencao;
-  }
+    async buscarPorId(id: number, idUsuario: number): Promise<Manutencao> {
+        const manutencao = await this.manutencaoRepository.findOne({
+            where: { id },
+            relations: ['veiculo'],
+        });
 
-  async buscarPorVeiculo(
-    veiculoId: number,
-    idUsuario: number,
-  ): Promise<ManutencaoResponseDto[]> {
-    await this.veiculoService.validarVeiculoExistente(veiculoId, idUsuario);
+        if (!manutencao) {
+            throw new HttpException('Manutenção não encontrada', HttpStatus.NOT_FOUND);
+        }
 
-    const manutencoes = await this.manutencaoRepository.find({
-      where: { veiculo: { id: veiculoId } },
-    });
+        // Verifica se a manutenção pertence a um veículo do usuário
+        if (manutencao.veiculo.idUsuario !== idUsuario) {
+            throw new HttpException('Acesso não autorizado', HttpStatus.FORBIDDEN);
+        }
 
-    return manutencoes.map((manutencao) =>
-      plainToClass(ManutencaoResponseDto, manutencao),
-    );
-  }
-
-  async atualizar(
-    id: number,
-    updateManutencaoDto: CreateManutencaoDto,
-    idUsuario: number,
-  ): Promise<ManutencaoResponseDto> {
-    const manutencao = await this.buscarPorId(id, idUsuario);
-
-    if (!manutencao) {
-      throw new HttpException(
-        'Manutenção não encontrada',
-        HttpStatus.NOT_FOUND,
-      );
+        return manutencao;
     }
 
-    Object.assign(manutencao, updateManutencaoDto);
+    async buscarPorVeiculo(veiculoId: number, idUsuario: number): Promise<ManutencaoResponseDto[]> {
+        await this.veiculoService.validarVeiculoExistente(veiculoId, idUsuario);
 
-    const atualizada = await this.manutencaoRepository.save(manutencao);
+        const manutencoes = await this.manutencaoRepository.find({
+            where: { veiculo: { id: veiculoId } },
+        });
 
-    return plainToClass(ManutencaoResponseDto, atualizada);
-  }
-
-  async deletar(id: number, idUsuario: number): Promise<void> {
-    await this.manutencaoRepository.delete({
-      id,
-      veiculo: { idUsuario },
-    });
-  }
-
-  async validarManutencaoExistente(
-    id: number,
-    idUsuario: number,
-  ): Promise<void> {
-    const manutencao = await this.manutencaoRepository.exists({
-      where: { id, veiculo: { idUsuario } },
-      relations: ['veiculo'],
-    });
-
-    if (!manutencao) {
-      throw new HttpException(
-        'Manutenção não encontrada',
-        HttpStatus.NOT_FOUND,
-      );
+        return manutencoes.map((manutencao) => plainToClass(ManutencaoResponseDto, manutencao));
     }
-  }
+
+    async atualizar(
+        id: number,
+        updateManutencaoDto: CreateManutencaoDto,
+        idUsuario: number,
+    ): Promise<ManutencaoResponseDto> {
+        const manutencao = await this.buscarPorId(id, idUsuario);
+
+        if (!manutencao) {
+            throw new HttpException('Manutenção não encontrada', HttpStatus.NOT_FOUND);
+        }
+
+        Object.assign(manutencao, updateManutencaoDto);
+
+        const atualizada = await this.manutencaoRepository.save(manutencao);
+
+        return plainToClass(ManutencaoResponseDto, atualizada);
+    }
+
+    async deletar(id: number, idUsuario: number): Promise<void> {
+        await this.manutencaoRepository.delete({
+            id,
+            veiculo: { idUsuario },
+        });
+    }
+
+    async validarManutencaoExistente(id: number, idUsuario: number): Promise<void> {
+        const manutencao = await this.manutencaoRepository.exists({
+            where: { id, veiculo: { idUsuario } },
+            relations: ['veiculo'],
+        });
+
+        if (!manutencao) {
+            throw new HttpException('Manutenção não encontrada', HttpStatus.NOT_FOUND);
+        }
+    }
 }

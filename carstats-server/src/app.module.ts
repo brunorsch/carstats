@@ -13,19 +13,15 @@ import { ManutencaoService } from './services/manutencao.service';
 import { VeiculoService } from './services/veiculo.service';
 
 @Module({
-  imports: [
-    TypeOrmModule.forRoot(databaseConfig),
-    TypeOrmModule.forFeature([Veiculo, Abastecimento, Manutencao]),
-  ],
-  controllers: [
-    VeiculoController,
-    AbastecimentoController,
-    ManutencaoController,
-  ],
-  providers: [VeiculoService, AbastecimentoService, ManutencaoService],
+    imports: [
+        TypeOrmModule.forRoot(databaseConfig),
+        TypeOrmModule.forFeature([Veiculo, Abastecimento, Manutencao]),
+    ],
+    controllers: [VeiculoController, AbastecimentoController, ManutencaoController],
+    providers: [VeiculoService, AbastecimentoService, ManutencaoService],
 })
 export class AppModule implements NestModule {
-  configure(consumer: MiddlewareConsumer) {
-    consumer.apply(UserHeaderMiddleware).forRoutes('*');
-  }
+    configure(consumer: MiddlewareConsumer) {
+        consumer.apply(UserHeaderMiddleware).forRoutes('*');
+    }
 }
