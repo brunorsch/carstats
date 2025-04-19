@@ -11,6 +11,7 @@ import {
     Req,
 } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiSecurity, ApiTags } from '@nestjs/swagger';
+import { plainToClass } from 'class-transformer';
 import { Request } from 'express';
 import { AbastecimentoResponseDto } from '../dtos/abastecimento/abastecimento-response.dto';
 import { CreateAbastecimentoDto } from '../dtos/abastecimento/create-abastecimento.dto';
@@ -89,7 +90,8 @@ export class VeiculoController {
         @Req() req: Request,
     ): Promise<VeiculoResponseDto> {
         const idUsuario = req.usuario.id;
-        return await this.veiculoService.atualizar(id, updateVeiculoDto, idUsuario);
+        const veiculo = await this.veiculoService.atualizar(id, updateVeiculoDto, idUsuario);
+        return plainToClass(VeiculoResponseDto, veiculo);
     }
 
     @Delete(':id')
@@ -157,12 +159,16 @@ export class VeiculoController {
         @Req() req: Request,
     ): Promise<AbastecimentoResponseDto> {
         const idUsuario = req.usuario.id;
+
         await this.veiculoService.validarVeiculoExistente(veiculoId, idUsuario);
-        return await this.abastecimentoService.cadastrar(
+
+        const resultado = await this.abastecimentoService.cadastrar(
             veiculoId,
             createAbastecimentoDto,
             idUsuario,
         );
+
+        return plainToClass(AbastecimentoResponseDto, resultado);
     }
 
     @Get(':id/abastecimentos')

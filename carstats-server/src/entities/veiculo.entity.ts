@@ -22,7 +22,7 @@ export class Veiculo {
     @Column()
     placa: string;
 
-    @Column({ type: 'decimal', precision: 10, scale: 2, default: 0 })
+    @Column({ type: 'decimal', precision: 10, default: 0 })
     quilometragemAtual: number;
 
     @OneToMany(() => Abastecimento, (abastecimento) => abastecimento.veiculo)
@@ -30,4 +30,23 @@ export class Veiculo {
 
     @OneToMany(() => Manutencao, (manutencao) => manutencao.veiculo)
     manutencoes: Manutencao[];
+
+    @Column({ default: 0 })
+    consumoCalculado: number = 0;
+
+    constructor(partial?: Partial<Veiculo>) {
+        Object.assign(this, partial);
+    }
+
+    registrarDadosAbastecimentoCompleto(
+        novaQuilometragem: number,
+        quilometragemAntiga: number,
+        litros: number,
+    ) {
+        const distancia = novaQuilometragem - quilometragemAntiga;
+        const consumo = distancia / litros;
+
+        this.quilometragemAtual = novaQuilometragem;
+        this.consumoCalculado = consumo;
+    }
 }
