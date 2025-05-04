@@ -56,7 +56,8 @@ export class AbastecimentoService {
     }
 
     private async atualizarConsumo(novoAbastecimento: Abastecimento) {
-        const idVeiculo = novoAbastecimento.veiculo.id;
+        const veiculo = novoAbastecimento.veiculo;
+        const idVeiculo = veiculo.id;
         const idUsuario = novoAbastecimento.veiculo.idUsuario;
 
         if (await this.consultarUltimoAbastecimento(idVeiculo)) {
@@ -68,11 +69,13 @@ export class AbastecimentoService {
                 const kmUltimoAbastecimento = ultimoAbastecimento!.quilometragem;
                 const litrosAbastecidos = novoAbastecimento.litros;
 
-                novoAbastecimento.veiculo.registrarDadosAbastecimentoCompleto(
+                veiculo.registrarDadosAbastecimentoCompleto(
                     kmNovoAbastecimento,
                     kmUltimoAbastecimento,
                     litrosAbastecidos,
                 );
+
+                novoAbastecimento.consumoCalculado = veiculo.consumoCalculado;
 
                 await this.veiculoService.atualizarValidandoPermissao(
                     idVeiculo,
@@ -86,16 +89,13 @@ export class AbastecimentoService {
     private async consultarUltimoAbastecimento(veiculoId: number): Promise<Abastecimento | null> {
         return await this.abastecimentoRepository
             .createQueryBuilder()
-            .where('abastecimento.veiculo_id = :veiculoId', { veiculoId })
-            .orderBy('abastecimento.data_abastecimento', 'DESC')
+            .where('`Abastecimento`.`veiculoId` = :veiculoId', { veiculoId })
+            .orderBy('`Abastecimento`.`data`', 'DESC')
             .getOne();
     }
 
     private async registrarQuilometragem(abastecimento: Abastecimento) {
-        const veiculo = await this.veiculoService.buscarPorId(
-            abastecimento.veiculo.id,
-            abastecimento.veiculo.idUsuario,
-        );
+        const veiculo = abastecimento.veiculo;
 
         veiculo.quilometragemAtual = abastecimento.quilometragem;
 

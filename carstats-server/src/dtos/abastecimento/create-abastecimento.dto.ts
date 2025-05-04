@@ -28,5 +28,5 @@ export class CreateAbastecimentoDto {
         description: 'Flag indicando se o tanque foi completado',
         required: true,
     })
-    isTanqueCheio: boolean;
+    isTanqueCompletado: boolean = false;
 }
